@@ -2,23 +2,27 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using Microsoft.Extensions.Logging;
 using Timer = System.Timers.Timer;
 
-namespace Glucy;
+namespace Glucy.Services;
 
-public class Tray {
+public class TrayService {
 
+	private readonly ILogger _logger;
 	private readonly NotifyIcon _notify;
 	private readonly Timer _timer;
 
-	public Tray(TimeSpan timeout) {
+	public TrayService(ILoggerFactory logger) {
+		_logger = logger.CreateLogger("Glucy.Tray");
 		_notify = new() { Visible = true };
-		_timer = new() { Enabled = true, Interval = (int) timeout.TotalMilliseconds };
+		_timer = new() { Enabled = true, Interval = (int) TimeSpan.FromMinutes(10).TotalMilliseconds };
 		_timer.Elapsed += OnTimeout;
 		_timer.Start();
 	}
 
 	private void OnTimeout(object? s, EventArgs e) {
+		_logger.LogWarning("Hid tray icon after 10 minutes of inactivity");
 		_notify.Icon = null;
 	}
 
