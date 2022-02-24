@@ -22,7 +22,7 @@ public class TrayService {
 	}
 
 	private void OnTimeout(object? s, EventArgs e) {
-		_logger.LogWarning("Hid tray icon after 10 minutes of inactivity");
+		if (_notify.Icon != null) _logger.LogWarning("Hid tray icon after 10 minutes of inactivity");
 		_notify.Icon = null;
 	}
 
