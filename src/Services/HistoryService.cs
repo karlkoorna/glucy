@@ -11,8 +11,8 @@ public class HistoryService {
 	private readonly Config _config;
 	private readonly SortedList<DateTimeOffset, Entry> _history = new();
 
-	public HistoryService(ILoggerFactory logger, Config config) {
-		_logger = logger.CreateLogger("Glucy.History");
+	public HistoryService(ILoggerFactory loggerFactory, Config config) {
+		_logger = loggerFactory.CreateLogger("Glucy.History");
 		_config = config;
 	}
 

@@ -1,4 +1,6 @@
-﻿using Glucy;
+﻿using System.Threading;
+using System.Windows.Forms;
+using Glucy;
 using Glucy.Services;
 using Glucy.Utils;
 using Microsoft.AspNetCore.Builder;
@@ -8,8 +10,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-var config = await Utils.LoadConfig<Config>("Glucy.json");
+Application.EnableVisualStyles();
+Application.SetCompatibleTextRenderingDefault(false);
 
+var config = await Utils.LoadConfig<Config>("Glucy.json");
 var builder = WebApplication.CreateBuilder();
 
 builder.Services.AddSingleton(config);
@@ -43,6 +47,7 @@ builder.WebHost.ConfigureKestrel(options => {
 var app = builder.Build();
 
 app.MapControllers();
+await app.Services.GetRequiredService<TrayService>().StartAsync(CancellationToken.None);
 
 app.Lifetime.ApplicationStarted.Register(() => {
 	app.Logger.LogInformation("Listening on {}", config.Listen);

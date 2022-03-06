@@ -9,4 +9,7 @@
 		<PublishSingleFile>true</PublishSingleFile>
 		<SelfContained>false</SelfContained>
 	</PropertyGroup>
+	<ItemGroup>
+		<Content Remove="*.json" />
+	</ItemGroup>
 </Project>

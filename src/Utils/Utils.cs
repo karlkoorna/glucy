@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Glucy.Utils;
 
-public static partial class Utils {
+public static class Utils {
 
 	public static async Task<T> LoadConfig<T>(string path) where T : class, IConfig<T>, new() {
 		var serializerOptions = new JsonSerializerOptions {
