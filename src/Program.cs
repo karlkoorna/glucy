@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+ConsoleWindow.Hide();
+
 var config = await Utils.LoadConfig<Config>("Glucy.json");
 var builder = WebApplication.CreateBuilder();
 
