@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
+using Glucy.Utils;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Timer = System.Timers.Timer;
@@ -14,19 +15,14 @@ namespace Glucy.Services;
 public class TrayService : Form, IHostedService {
 
 	private readonly ILogger _logger;
-	private readonly NotifyIcon _notify = new();
+	private readonly Config _config;
+
+	private readonly NotifyIcon _icon = new();
 	private readonly Timer _timer = new();
 
-	private double lastValue;
-	private string lastStatus = "";
-
-	public TrayService(ILoggerFactory loggerFactory) {
+	public TrayService(ILoggerFactory loggerFactory, Config config) {
 		_logger = loggerFactory.CreateLogger("Glucy.Tray");
-
-		_notify.Visible = true;
-		_timer.Enabled = true;
-		_timer.Interval = TimeSpan.FromMinutes(10).TotalMilliseconds;
-		_timer.Elapsed += OnTimeout;
+		_config = config;
 	}
 
 	protected override void OnLoad(EventArgs e) {
@@ -36,12 +32,12 @@ public class TrayService : Form, IHostedService {
 	}
 
 	protected override void Dispose(bool isDisposing) {
-		if (isDisposing) _notify.Dispose();
+		if (isDisposing) _icon.Dispose();
 		base.Dispose(isDisposing);
 	}
 
 	public Task StartAsync(CancellationToken token) {
-		var thread = new Thread(() => Application.Run(this)) { IsBackground = true };
+		var thread = new Thread(OnThread) { IsBackground = true };
 		thread.SetApartmentState(ApartmentState.STA);
 		thread.Start();
 
@@ -52,24 +48,50 @@ public class TrayService : Form, IHostedService {
 		return Task.CompletedTask;
 	}
 
+	private void OnThread() {
+		_icon.Visible = true;
+		_icon.MouseDown += OnClick;
+		_icon.ContextMenuStrip = new() {
+			Items = {
+				new ToolStripMenuItem("Show", null, (_, _) => ConsoleWindow.ShowHide()),
+				new ToolStripMenuItem("Exit", null, (_, _) => Environment.Exit(0))
+			}
+		};
+
+		_timer.Enabled = true;
+		_timer.Elapsed += OnTimeout;
+		_timer.Interval = TimeSpan.FromMinutes(10).TotalMilliseconds;
+
+		DrawDot();
+		Application.Run(this);
+	}
+
+	private void OnClick(object? sender, MouseEventArgs e) {
+		_icon.ContextMenuStrip.Items[0].Text = ConsoleWindow.Visible ? "Hide" : "Show";
+	}
+
 	private void OnTimeout(object? sender, ElapsedEventArgs e) {
-		_logger.LogWarning("Hid tray icon after 10 minutes of inactivity");
-		Update(lastValue, lastStatus, true);
+		_logger.LogWarning("Hid tray value after 10 minutes of inactivity");
+		DrawDot();
+	}
+
+	public void DrawDot() {
 		_timer.Stop();
+
+		var bmp = new Bitmap(32, 32);
+		var g = Graphics.FromImage(bmp);
+		g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+		g.SmoothingMode = SmoothingMode.HighQuality;
+		g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+		g.FillEllipse(Brushes.LightGray, new(8, 8, 16, 16));
+
+		_icon.Icon = Icon.FromHandle(bmp.GetHicon());
 	}
 
-	public void Update(double value, string status) {
-		Update(value, status, false);
-	}
-
-	private void Update(double value, string status, bool fromCache) {
-		lastValue = value;
-		lastStatus = status;
-
-		if (!fromCache) {
-			_timer.Stop();
-			_timer.Start();
-		}
+	public void DrawValue(double value, string status) {
+		_timer.Stop();
+		_timer.Start();
 
 		var bmp = new Bitmap(32, 32);
 		var g = Graphics.FromImage(bmp);
@@ -79,6 +101,7 @@ public class TrayService : Form, IHostedService {
 
 		string strValue;
 		int fontSize;
+		Brush brush;
 
 		if (value >= 10) {
 			strValue = value.ToString("0");
@@ -88,10 +111,16 @@ public class TrayService : Form, IHostedService {
 			fontSize = 17;
 		}
 
-		g.DrawString(strValue, new("Courier", fontSize, FontStyle.Bold), fromCache ? Brushes.Coral : Brushes.White, new PointF(16, 16), new() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center });
+		if (value < _config.LowValue || value >= _config.HighValue) {
+			brush = Brushes.Coral;
+		} else {
+			brush = Brushes.White;
+		}
 
-		_notify.Icon = Icon.FromHandle(bmp.GetHicon());
-		_notify.Text = status;
+		g.DrawString(strValue, new("Courier", fontSize, FontStyle.Bold), brush, new PointF(16, 16), new() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center });
+
+		_icon.Icon = Icon.FromHandle(bmp.GetHicon());
+		_icon.Text = status;
 	}
 
 }

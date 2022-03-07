@@ -1,5 +1,4 @@
 ﻿using System.Threading;
-using System.Windows.Forms;
 using Glucy;
 using Glucy.Services;
 using Glucy.Utils;
@@ -9,9 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
-Application.EnableVisualStyles();
-Application.SetCompatibleTextRenderingDefault(false);
 
 var config = await Utils.LoadConfig<Config>("Glucy.json");
 var builder = WebApplication.CreateBuilder();

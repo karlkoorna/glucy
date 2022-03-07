@@ -18,6 +18,8 @@ public class ConsoleWindow {
 	[return: MarshalAs(UnmanagedType.Bool)]
 	private static extern bool IsWindowVisible(IntPtr hWnd);
 
+	public static bool Visible => IsWindowVisible(GetConsoleWindow());
+
 	public static void Hide() {
 		ShowWindow(GetConsoleWindow(), SW_HIDE);
 	}
@@ -26,8 +28,9 @@ public class ConsoleWindow {
 		ShowWindow(GetConsoleWindow(), SW_SHOW);
 	}
 
-	public static bool IsVisible() {
-		return IsWindowVisible(GetConsoleWindow());
+	public static void ShowHide() {
+		if (Visible) Hide();
+		else Show();
 	}
 
 }

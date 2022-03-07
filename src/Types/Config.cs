@@ -14,6 +14,10 @@ public class Config : IConfig<Config> {
 
 	public ushort HistorySize { get; set; } = 10;
 
+	public ushort LowValue { get; set; } = 4;
+
+	public ushort HighValue { get; set; } = 10;
+
 	[JsonIgnore]
 	public ushort Port;
 

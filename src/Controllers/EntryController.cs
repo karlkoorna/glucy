@@ -46,7 +46,7 @@ public class EntryController : ControllerBase {
 
 		var mmol = Math.Round(entry.Sgv / 18F, 1);
 		_historyService.Add(entry);
-		_trayService.Update(mmol, $"{mmol:0.0} {entry.Direction.GetDisplayName()}");
+		_trayService.DrawValue(mmol, $"{mmol:0.0} {entry.Direction.GetDisplayName()}");
 		_logger.LogInformation("Received reading {} {}", mmol.ToString("0.0"), entry.Direction.GetDisplayName());
 
 		return Ok();
