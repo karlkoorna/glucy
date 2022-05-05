@@ -12,14 +12,14 @@ public sealed class BasicConsoleFormatter : ConsoleFormatter, IDisposable {
 	public new const string Name = "basic";
 
 	private readonly IDisposable? _optionsToken;
-	private BasicConsoleFormatterOptions _options;
+	private ConsoleFormatterOptions _options;
 
-	public BasicConsoleFormatter(IOptionsMonitor<BasicConsoleFormatterOptions> options) : base(Name) {
+	public BasicConsoleFormatter(IOptionsMonitor<ConsoleFormatterOptions> options) : base(Name) {
 		_optionsToken = options.OnChange(OnOptionsChange);
 		_options = options.CurrentValue;
 	}
 
-	private void OnOptionsChange(BasicConsoleFormatterOptions options) {
+	private void OnOptionsChange(ConsoleFormatterOptions options) {
 		_options = options;
 	}
 

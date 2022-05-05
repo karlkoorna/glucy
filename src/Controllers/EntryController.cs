@@ -34,7 +34,7 @@ public class EntryController : ControllerBase {
 
 	[HttpPost]
 	[Consumes("application/json")]
-	public ActionResult Post([FromBody] Entry[] entries) {
+	public ActionResult Post([FromBody] List<Entry> entries) {
 		if (!_authService.CanWrite(Request)) return Unauthorized(null);
 
 		var entry = entries.LastOrDefault();

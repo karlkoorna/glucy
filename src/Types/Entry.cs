@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text.Json.Serialization;
-using Glucy.Converters;
+using Glucy.Utils;
 
 namespace Glucy.Types;
 
@@ -19,11 +19,11 @@ public class Entry {
 	public float Delta { get; set; }
 
 	[JsonPropertyName("direction")]
-	[JsonConverter(typeof(EnumConverter<EntryDirection>))]
+	[JsonConverter(typeof(StringEnumJsonConverter<EntryDirection>))]
 	public EntryDirection Direction { get; set; }
 
 	[JsonPropertyName("date")]
-	[JsonConverter(typeof(TimestampConverter))]
+	[JsonConverter(typeof(TimestampJsonConverter))]
 	public DateTimeOffset Timestamp { get; set; }
 
 }

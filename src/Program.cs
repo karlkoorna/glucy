@@ -8,43 +8,48 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 ConsoleWindow.Hide();
 
 var config = await Utils.LoadConfig<Config>("Glucy.json");
 var builder = WebApplication.CreateBuilder();
 
-builder.Services.AddSingleton(config);
-builder.Services.AddSingleton<TrayService>();
-builder.Services.AddSingleton<AuthService>();
-builder.Services.AddSingleton<HistoryService>();
+builder.WebHost
+	.ConfigureKestrel(options => {
+		options.AddServerHeader = false;
+		options.Limits.MaxRequestBodySize = 1024 * 1024; // 1 MiB
+		options.Limits.MaxRequestHeadersTotalSize = 1024; // 1 KiB
+	})
+	.ConfigureLogging(options => {
+		options.SetMinimumLevel(LogLevel.Information);
+		options.AddFilter("Microsoft", LogLevel.Warning);
 
-builder.Services.AddControllers()
-	.ConfigureApiBehaviorOptions(options => {
-		options.InvalidModelStateResponseFactory = _ => new ObjectResult(null) { StatusCode = StatusCodes.Status400BadRequest }; //
 	});
 
-builder.Logging
-	.AddConsoleFormatter<BasicConsoleFormatter, BasicConsoleFormatterOptions>()
+builder.Services.AddControllers()
+	.ConfigureApiBehaviorOptions(options => { options.InvalidModelStateResponseFactory = _ => new StatusCodeResult(StatusCodes.Status400BadRequest); });
+
+builder.Logging.AddSimpleConsole()
+	.AddConsoleFormatter<BasicConsoleFormatter, ConsoleFormatterOptions>()
 	.AddConsole(options => {
 		options.LogToStandardErrorThreshold = LogLevel.Warning;
 		options.FormatterName = BasicConsoleFormatter.Name;
 	});
 
-builder.WebHost.ConfigureLogging(options => {
-	options.SetMinimumLevel(LogLevel.Information);
-	options.AddFilter("Microsoft", LogLevel.Warning);
-});
+builder.Services
+	.Configure<ConsoleFormatterOptions>(options => { options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss"; });
 
-builder.WebHost.ConfigureKestrel(options => {
-	options.AddServerHeader = false;
-	options.Limits.MaxRequestBodySize = 1048576; // 1 MiB
-	options.Limits.MaxRequestHeadersTotalSize = 1024; // 1 KiB
-});
+builder.Services
+	.AddSingleton(config)
+	.AddSingleton<TrayService>()
+	.AddSingleton<AuthService>()
+	.AddSingleton<HistoryService>();
 
 var app = builder.Build();
 
 app.MapControllers();
+
 await app.Services.GetRequiredService<TrayService>().StartAsync(CancellationToken.None);
 
 app.Lifetime.ApplicationStarted.Register(() => {

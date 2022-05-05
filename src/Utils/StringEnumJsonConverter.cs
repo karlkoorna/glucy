@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Glucy.Converters;
+namespace Glucy.Utils;
 
-public class EnumConverter<T> : JsonConverter<T> where T : struct, Enum {
+public class StringEnumJsonConverter<T> : JsonConverter<T> where T : struct, Enum {
 
-	private readonly Dictionary<T, string> _toString = new();
 	private readonly Dictionary<string, T> _toEnum = new();
+	private readonly Dictionary<T, string> _toString = new();
 
-	public EnumConverter() {
+	public StringEnumJsonConverter() {
 		var type = typeof(T);
 
 		foreach (var value in Enum.GetValues<T>()) {
@@ -21,8 +21,8 @@ public class EnumConverter<T> : JsonConverter<T> where T : struct, Enum {
 				.Cast<JsonPropertyNameAttribute>();
 
 			foreach (var attr in attrs) {
-				_toString.Add(value, attr.Name);
 				_toEnum.Add(attr.Name, value);
+				_toString.Add(value, attr.Name);
 			}
 		}
 	}

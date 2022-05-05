@@ -14,15 +14,15 @@ namespace Glucy.Services;
 
 public class TrayService : Form, IHostedService {
 
-	private readonly ILogger _logger;
 	private readonly Config _config;
+	private readonly ILogger _logger;
 
 	private readonly NotifyIcon _icon = new();
 	private readonly Timer _timer = new();
 
-	public TrayService(ILoggerFactory loggerFactory, Config config) {
-		_logger = loggerFactory.CreateLogger("Glucy.Tray");
+	public TrayService(Config config, ILoggerFactory loggerFactory) {
 		_config = config;
+		_logger = loggerFactory.CreateLogger("Glucy.Tray");
 	}
 
 	protected override void OnLoad(EventArgs e) {
@@ -32,7 +32,11 @@ public class TrayService : Form, IHostedService {
 	}
 
 	protected override void Dispose(bool isDisposing) {
-		if (isDisposing) _icon.Dispose();
+		if (isDisposing) {
+			_icon.Dispose();
+			_timer.Dispose();
+		}
+
 		base.Dispose(isDisposing);
 	}
 

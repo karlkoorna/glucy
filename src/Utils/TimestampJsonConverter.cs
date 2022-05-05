@@ -2,9 +2,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Glucy.Converters;
+namespace Glucy.Utils;
 
-public class TimestampConverter : JsonConverter<DateTimeOffset> {
+public class TimestampJsonConverter : JsonConverter<DateTimeOffset> {
 
 	public override DateTimeOffset Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options) {
 		return DateTimeOffset.FromUnixTimeMilliseconds(reader.GetInt64());

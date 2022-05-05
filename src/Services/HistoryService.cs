@@ -7,13 +7,14 @@ namespace Glucy.Services;
 
 public class HistoryService {
 
-	private readonly ILogger _logger;
 	private readonly Config _config;
+	private readonly ILogger _logger;
+
 	private readonly SortedList<DateTimeOffset, Entry> _history = new();
 
-	public HistoryService(ILoggerFactory loggerFactory, Config config) {
-		_logger = loggerFactory.CreateLogger("Glucy.History");
+	public HistoryService(Config config, ILoggerFactory loggerFactory) {
 		_config = config;
+		_logger = loggerFactory.CreateLogger("Glucy.History");
 	}
 
 	public void Add(Entry entry) {
